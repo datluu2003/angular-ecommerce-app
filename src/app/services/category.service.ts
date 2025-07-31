@@ -8,6 +8,6 @@ export class CategoryService {
   constructor(private http: HttpClient) {}
 
   getCategories(): Observable<{data: Category[]}> {
-    return this.http.get<{data: Category[]}>('http://localhost:8080/categories');
+    return this.http.get<{data: Category[]}>('http://localhost:8080/api/categories');
   }
 } 
