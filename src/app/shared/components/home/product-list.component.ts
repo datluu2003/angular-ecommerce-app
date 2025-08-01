@@ -3,6 +3,7 @@ import { CommonModule, CurrencyPipe } from '@angular/common';
 import { Product } from '../../../models/product.model';
 import { ProductService } from '../../../services/product.service';
 import { ChangeDetectorRef } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-product-list',
@@ -15,8 +16,8 @@ import { ChangeDetectorRef } from '@angular/core';
         <ul *ngIf="!loading" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-10 list-none p-0">
           <li *ngFor="let product of hotProducts"
               class="border rounded-2xl p-3 md:p-5 bg-gradient-to-b from-yellow-50 to-green-100 shadow-lg hover:shadow-2xl transition flex flex-col gap-2 md:gap-3 relative group h-full">
-            <img [src]="getImage(product)" [alt]="product.name" class="w-full h-36 md:h-44 object-cover rounded-xl border border-green-200" />
-            <div class="font-bold text-base md:text-lg text-green-800 group-hover:text-green-600 transition">{{ product.name }}</div>
+            <img [src]="getImage(product)" [alt]="product.name" class="w-full h-36 md:h-44 object-cover rounded-xl border border-green-200 cursor-pointer" (click)="goToDetail(product)" />
+            <div class="font-bold text-base md:text-lg text-green-800 group-hover:text-green-600 transition cursor-pointer" (click)="goToDetail(product)">{{ product.name }}</div>
             <div class="text-green-700 font-semibold">{{ product.price | currency:'VND' }}</div>
             <div class="flex-1"></div>
             <button class="mt-2 py-2 rounded-xl bg-gradient-to-r from-green-400 to-lime-500 text-white font-bold shadow hover:from-lime-500 hover:to-green-600 transition w-full">Mua ngay</button>
@@ -29,8 +30,8 @@ import { ChangeDetectorRef } from '@angular/core';
         <ul *ngIf="!loading" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-10 list-none p-0">
           <li *ngFor="let product of products"
               class="border rounded-2xl p-3 md:p-5 bg-gradient-to-b from-yellow-50 to-green-100 shadow-lg hover:shadow-2xl transition flex flex-col gap-2 md:gap-3 relative group h-full">
-            <img [src]="getImage(product)" [alt]="product.name" class="w-full h-36 md:h-44 object-cover rounded-xl border border-green-200" />
-            <div class="font-bold text-base md:text-lg text-green-800 group-hover:text-green-600 transition">{{ product.name }}</div>
+            <img [src]="getImage(product)" [alt]="product.name" class="w-full h-36 md:h-44 object-cover rounded-xl border border-green-200 cursor-pointer" (click)="goToDetail(product)" />
+            <div class="font-bold text-base md:text-lg text-green-800 group-hover:text-green-600 transition cursor-pointer" (click)="goToDetail(product)">{{ product.name }}</div>
             <div class="text-green-700 font-semibold">{{ product.price | currency:'VND' }}</div>
             <div class="flex-1"></div>
             <button class="mt-2 py-2 rounded-xl bg-gradient-to-r from-green-400 to-lime-500 text-white font-bold shadow hover:from-lime-500 hover:to-green-600 transition w-full">Mua ngay</button>
@@ -45,17 +46,19 @@ export class ProductListComponent implements OnInit {
   hotProducts: Product[] = [];
   loading = true;
 
-  constructor(private productService: ProductService, private cdr: ChangeDetectorRef) {}
+  constructor(private productService: ProductService, private cdr: ChangeDetectorRef, private router: Router) {}
 
   ngOnInit() {
     this.productService.getProducts().subscribe({
       next: (data: any) => {
+        console.log('API products response:', data);
         this.products = data.data || [];
         this.hotProducts = this.getRandomProducts(this.products, 8);
         this.loading = false;
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err) => {
+        console.error('API products error:', err);
         this.loading = false;
       }
     });
@@ -78,5 +81,13 @@ export class ProductListComponent implements OnInit {
       }
     }
     return imgSrc || '/default.png';
+  }
+
+  goToDetail(product: Product) {
+    if (product && product.slug) {
+      this.router.navigate(['/product', product.slug]);
+    } else if (product && product._id) {
+      this.router.navigate(['/product', product._id]);
+    }
   }
 }

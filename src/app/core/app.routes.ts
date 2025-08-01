@@ -18,5 +18,10 @@ export const routes: Routes = [
     path: 'register',
     loadComponent: () => import('../shared/components/auth/register/register.component').then(m => m.RegisterComponent)
   },
+  {
+    path: 'product/:slug',
+    loadComponent: () => import('../shared/components/product-detail/product-detail.component').then(m => m.ProductDetailComponent),
+    runGuardsAndResolvers: 'always'
+  },
   // Có thể thêm các route khác ở đây
 ];

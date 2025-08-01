@@ -13,4 +13,8 @@ export class ProductService {
   getProductsFrom8080(): Observable<any> {
     return this.http.get<any>('http://localhost:8080/api/products');
   }
+  
+  getProductBySlug(slug: string): Observable<any> {
+    return this.http.get<any>(`http://localhost:8080/api/product/slug/${slug}`);
+  }
 }

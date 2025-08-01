@@ -11,6 +11,7 @@ export interface Product {
   image_cover?: string;
   description: string;
   price: number;
+  slug?: string;
   type?: string;
   category?: Category;
 }
