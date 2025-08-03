@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { HeaderComponent } from '../shared/components/header.component';
 import { FooterComponent } from '../shared/components/footer.component';
+import { ToastContainerComponent } from '../shared/components/toast/toast-container.component';
 
 @Component({
   selector: 'app-root',
@@ -10,6 +11,7 @@ import { FooterComponent } from '../shared/components/footer.component';
     HeaderComponent,
     RouterOutlet,
     FooterComponent,
+    ToastContainerComponent,
   ],
   templateUrl: './app.html'
 })
