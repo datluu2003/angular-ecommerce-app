@@ -31,21 +31,39 @@ function passwordMatchValidator(control: AbstractControl): ValidationErrors | nu
 
         <!-- Form -->
         <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-          <!-- Name Field -->
+          <!-- First Name Field -->
           <div class="mb-2.5">
-            <label for="name" class="block text-sm font-semibold text-gray-600 mb-2">
-              Họ tên
+            <label for="firstName" class="block text-sm font-semibold text-gray-600 mb-2">
+              Họ
             </label>
             <input
               type="text"
-              id="name"
-              formControlName="name"
+              id="firstName"
+              formControlName="firstName"
               class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              [ngClass]="{'border-red-500': registerForm.get('name')?.invalid && (registerForm.get('name')?.dirty || registerForm.get('name')?.touched)}"
+              [ngClass]="{'border-red-500': registerForm.get('firstName')?.invalid && (registerForm.get('firstName')?.dirty || registerForm.get('firstName')?.touched)}"
             >
-            <div *ngIf="registerForm.get('name')?.invalid && (registerForm.get('name')?.dirty || registerForm.get('name')?.touched)" class="text-red-500 text-sm mt-1">
-              <div *ngIf="registerForm.get('name')?.errors?.['required']">Họ tên là bắt buộc</div>
-              <div *ngIf="registerForm.get('name')?.errors?.['minlength']">Họ tên phải có ít nhất 2 ký tự</div>
+            <div *ngIf="registerForm.get('firstName')?.invalid && (registerForm.get('firstName')?.dirty || registerForm.get('firstName')?.touched)" class="text-red-500 text-sm mt-1">
+              <div *ngIf="registerForm.get('firstName')?.errors?.['required']">Họ là bắt buộc</div>
+              <div *ngIf="registerForm.get('firstName')?.errors?.['minlength']">Họ phải có ít nhất 2 ký tự</div>
+            </div>
+          </div>
+
+          <!-- Last Name Field -->
+          <div class="mb-2.5">
+            <label for="lastName" class="block text-sm font-semibold text-gray-600 mb-2">
+              Tên
+            </label>
+            <input
+              type="text"
+              id="lastName"
+              formControlName="lastName"
+              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              [ngClass]="{'border-red-500': registerForm.get('lastName')?.invalid && (registerForm.get('lastName')?.dirty || registerForm.get('lastName')?.touched)}"
+            >
+            <div *ngIf="registerForm.get('lastName')?.invalid && (registerForm.get('lastName')?.dirty || registerForm.get('lastName')?.touched)" class="text-red-500 text-sm mt-1">
+              <div *ngIf="registerForm.get('lastName')?.errors?.['required']">Tên là bắt buộc</div>
+              <div *ngIf="registerForm.get('lastName')?.errors?.['minlength']">Tên phải có ít nhất 2 ký tự</div>
             </div>
           </div>
 
@@ -137,10 +155,12 @@ export class RegisterComponent implements OnInit {
 
   ngOnInit(): void {
     this.registerForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(2)]],
+      firstName: ['', [Validators.required, Validators.minLength(2)]],
+      lastName: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', [Validators.required]]
+      confirmPassword: ['', [Validators.required]],
+      phone: ['']
     }, {
       validators: passwordMatchValidator
     });
@@ -149,15 +169,24 @@ export class RegisterComponent implements OnInit {
   onSubmit(): void {
     if (this.registerForm.valid) {
       this.loading = true;
-      this.authService.register(this.registerForm.value).subscribe({
-        next: (res: { token: string; user: any }) => {
-          localStorage.setItem('token', res.token);
-          localStorage.setItem('user', JSON.stringify(res.user));
-          this.router.navigate(['/']);
-        },
-        error: (err: any) => {
-          this.errorMsg = err.error?.message || 'Đăng ký thất bại';
+      this.errorMsg = '';
+      
+      const formData = {
+        firstName: this.registerForm.value.firstName,
+        lastName: this.registerForm.value.lastName,
+        email: this.registerForm.value.email,
+        password: this.registerForm.value.password,
+        phone: this.registerForm.value.phone || ''
+      };
+      
+      this.authService.register(formData).subscribe({
+        next: (response) => {
           this.loading = false;
+          // Redirect is handled by AuthService automatically
+        },
+        error: (error) => {
+          this.loading = false;
+          this.errorMsg = error.error?.message || 'Đăng ký thất bại';
         }
       });
     } else {

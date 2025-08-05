@@ -8,6 +8,8 @@ export interface CartItem {
   quantity: number;
   image: string;
   slug: string;
+  description?: string;
+  originalPrice?: number;
 }
 
 @Injectable({
@@ -17,6 +19,10 @@ export class CartService {
   private cartItems: CartItem[] = [];
   private cartItemsSubject = new BehaviorSubject<CartItem[]>([]);
   public cartItems$ = this.cartItemsSubject.asObservable();
+  
+  // Cart open/close state
+  private isCartOpenSubject = new BehaviorSubject<boolean>(false);
+  public isCartOpen$ = this.isCartOpenSubject.asObservable();
 
   constructor() {
     // Load cart from localStorage nếu đang ở trình duyệt
@@ -41,7 +47,9 @@ export class CartService {
         price: product.price,
         quantity: quantity,
         image: this.getProductImage(product),
-        slug: product.slug
+        slug: product.slug,
+        description: product.description || '',
+        originalPrice: product.originalPrice || undefined
       };
       this.cartItems.push(newItem);
     }
@@ -89,6 +97,22 @@ export class CartService {
     this.cartItems = [];
     this.saveCartToStorage();
     this.cartItemsSubject.next([]);
+  }
+
+  openCart(): void {
+    this.isCartOpenSubject.next(true);
+  }
+
+  closeCart(): void {
+    this.isCartOpenSubject.next(false);
+  }
+
+  toggleCart(): void {
+    this.isCartOpenSubject.next(!this.isCartOpenSubject.value);
+  }
+
+  isCartOpen(): boolean {
+    return this.isCartOpenSubject.value;
   }
 
   private getProductImage(product: any): string {

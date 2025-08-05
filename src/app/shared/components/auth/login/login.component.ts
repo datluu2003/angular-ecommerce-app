@@ -97,15 +97,16 @@ export class LoginComponent implements OnInit {
   onSubmit(): void {
     if (this.loginForm.valid) {
       this.loading = true;
+      this.errorMsg = '';
+      
       this.authService.login(this.loginForm.value).subscribe({
-        next: (res: { token: string; user: any }) => {
-          localStorage.setItem('token', res.token);
-          localStorage.setItem('user', JSON.stringify(res.user));
-          this.router.navigate(['/']);
-        },
-        error: (err: any) => {
-          this.errorMsg = err.error?.message || 'Đăng nhập thất bại';
+        next: (response) => {
           this.loading = false;
+          // Redirect is handled by AuthService automatically
+        },
+        error: (error) => {
+          this.loading = false;
+          this.errorMsg = error.error?.message || 'Đăng nhập thất bại';
         }
       });
     } else {

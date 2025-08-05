@@ -1,13 +1,19 @@
-import { Component } from '@angular/core';
-import { NgClass } from '@angular/common';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { NgClass, CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { CartService } from '../../services/cart.service';
+import { AuthService } from '../../services/auth.service';
+import { User } from '../../models/user.model';
+import { MiniCartComponent } from './cart/mini-cart.component';
+import { ClickOutsideDirective } from '../directives/click-outside.directive';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [NgClass, RouterLink],
+  imports: [NgClass, RouterLink, CommonModule, MiniCartComponent, ClickOutsideDirective],
   template: `
-    <header class="relative bg-white/80 backdrop-blur-lg border-b border-gray-200/50 sticky top-0 z-50 shadow-lg shadow-black/5">
+    <header class="bg-white/80 backdrop-blur-lg border-b border-gray-200/50 sticky top-0 z-50 shadow-lg shadow-black/5">
       <div class="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5"></div>
       <nav class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
@@ -46,24 +52,96 @@ import { RouterLink } from '@angular/router';
           <!-- Action Icons & Mobile Menu -->
           <div class="flex items-center space-x-4">
             <!-- Cart Icon with Badge -->
-            <div class="relative">
-              <button class="p-2 text-gray-700 hover:text-blue-600 transition-colors duration-200 relative group">
+            <div class="relative" (clickOutside)="closeMiniCart()">
+              <button 
+                (click)="toggleMiniCart()"
+                class="p-2 text-gray-700 hover:text-blue-600 transition-colors duration-200 relative group"
+              >
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.67 5.73a1 1 0 00.96 1.27h9.42a1 1 0 00.96-1.27L15 13M9 19.5a1.5 1.5 0 003 0M20 19.5a1.5 1.5 0 003 0"/>
                 </svg>
                 <!-- Badge -->
-                <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold">
-                  3
+                <span 
+                  *ngIf="totalItems > 0"
+                  class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-semibold"
+                >
+                  {{ totalItems }}
                 </span>
               </button>
+              <!-- Mini Cart Dropdown -->
+              <app-mini-cart [isOpen]="miniCartOpen"></app-mini-cart>
             </div>
 
             <!-- User Profile Icon -->
-            <div class="relative">
+            <div class="relative" *ngIf="!isLoggedIn">
               <button routerLink="/login" class="p-2 text-gray-700 hover:text-blue-600 transition-colors duration-200 relative group">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                 </svg>
+              </button>
+            </div>
+
+            <!-- User Dropdown when logged in -->
+            <div class="relative" *ngIf="isLoggedIn" (clickOutside)="closeUserDropdown()">
+              <button 
+                (click)="toggleUserDropdown()"
+                class="flex items-center space-x-2 p-2 text-gray-700 hover:text-blue-600 transition-colors duration-200"
+              >
+                <img 
+                  [src]="currentUser?.avatar || '/default.png'" 
+                  [alt]="currentUser?.Username || currentUser?.username"
+                  class="w-8 h-8 rounded-full border-2 border-gray-200"
+                />
+                <span class="hidden md:block font-medium">{{ currentUser?.Username || currentUser?.username }}</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </button>
+              
+              <!-- User Dropdown Menu -->
+              <div *ngIf="userDropdownOpen" class="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                <div class="p-4 border-b border-gray-200">
+                  <p class="font-medium text-gray-900">{{ currentUser?.Username || currentUser?.username }}</p>
+                  <p class="text-sm text-gray-500">{{ currentUser?.email }}</p>
+                  <span class="inline-block mt-1 px-2 py-1 text-xs rounded-full" 
+                        [ngClass]="currentUser?.role === 'admin' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'">
+                    {{ currentUser?.role === 'admin' ? 'Quản trị viên' : 'Thành viên' }}
+                  </span>
+                </div>
+                <div class="py-2">
+                  <a routerLink="/profile" class="block px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors">
+                    <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                    Hồ sơ cá nhân
+                  </a>
+                  <a *ngIf="currentUser?.role === 'admin'" routerLink="/admin" class="block px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors">
+                    <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    Quản trị
+                  </a>
+                  <button 
+                    (click)="logout()"
+                    class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    </svg>
+                    Đăng xuất
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Login/Register buttons when not logged in -->
+            <div class="hidden md:flex items-center space-x-2" *ngIf="!isLoggedIn">
+              <button routerLink="/login" class="px-4 py-2 text-blue-600 hover:text-blue-700 font-medium transition-colors">
+                Đăng nhập
+              </button>
+              <button routerLink="/register" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors">
+                Đăng ký
               </button>
             </div>
 
@@ -105,6 +183,72 @@ import { RouterLink } from '@angular/router';
     </header>
   `
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit, OnDestroy {
   mobileOpen = false;
+  miniCartOpen = false;
+  userDropdownOpen = false;
+  totalItems = 0;
+  isLoggedIn = false;
+  currentUser: User | null = null;
+  private subscriptions: Subscription[] = [];
+
+  constructor(
+    private cartService: CartService,
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit(): void {
+    // Subscribe to cart items
+    const cartSub = this.cartService.cartItems$.subscribe(() => {
+      this.totalItems = this.cartService.getTotalItems();
+      this.cdr.markForCheck();
+    });
+    
+    // Subscribe to auth state
+    const authSub = this.authService.isLoggedIn$.subscribe(isLoggedIn => {
+      this.isLoggedIn = isLoggedIn;
+      this.cdr.markForCheck();
+    });
+    
+    // Subscribe to current user
+    const userSub = this.authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+      this.cdr.markForCheck();
+    });
+
+    this.subscriptions.push(cartSub, authSub, userSub);
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(sub => sub.unsubscribe());
+  }
+
+  toggleCart(): void {
+    this.cartService.toggleCart();
+    this.miniCartOpen = false; // Close mini cart when opening full cart
+  }
+
+  toggleMiniCart(): void {
+    this.miniCartOpen = !this.miniCartOpen;
+    this.userDropdownOpen = false; // Close user dropdown
+  }
+
+  closeMiniCart(): void {
+    this.miniCartOpen = false;
+  }
+
+  toggleUserDropdown(): void {
+    this.userDropdownOpen = !this.userDropdownOpen;
+    this.miniCartOpen = false; // Close mini cart
+  }
+
+  closeUserDropdown(): void {
+    this.userDropdownOpen = false;
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.userDropdownOpen = false;
+  }
 }
