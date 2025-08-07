@@ -17,7 +17,7 @@ export class AuthInterceptor implements HttpInterceptor {
     const skipAuth = this.shouldSkipAuth(req.url);
     
     if (skipAuth) {
-      console.log('Skipping auth for:', req.url);
+      // ...existing code...
       return next.handle(req);
     }
 
@@ -29,27 +29,16 @@ export class AuthInterceptor implements HttpInterceptor {
       authReq = req.clone({
         headers: req.headers.set('Authorization', `Bearer ${token}`)
       });
-      console.log('[AuthInterceptor] Added auth header for:', req.url);
-      console.log('[AuthInterceptor] Token preview:', token.substring(0, 20) + '...');
-      console.log('[AuthInterceptor] Headers:', authReq.headers);
     } else if (token && !this.authService.isTokenValid()) {
       // Token exists but expired
-      console.log('[AuthInterceptor] Token expired, logging out...');
       this.authService.logout();
       return throwError(() => new Error('Token expired'));
     } else {
-      console.log('[AuthInterceptor] No valid token for request:', req.url);
+      // ...existing code...
     }
 
     return next.handle(authReq).pipe(
       catchError((error: HttpErrorResponse) => {
-        console.error('HTTP Error:', {
-          status: error.status,
-          statusText: error.statusText,
-          url: error.url,
-          message: error.message,
-          error: error.error
-        });
 
         if (error.status === 401) {
           // Don't show toast for login requests

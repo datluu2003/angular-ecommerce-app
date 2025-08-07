@@ -4,6 +4,8 @@ import { RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { CartService, CartItem } from '../../../services/cart.service';
 import { ToastService } from '../../../services/toast.service';
+import { Router } from '@angular/router';
+
 
 @Component({
   selector: 'app-cart-page',
@@ -198,7 +200,8 @@ export class CartPageComponent implements OnInit, OnDestroy {
   constructor(
     private cartService: CartService,
     private toastService: ToastService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -264,7 +267,9 @@ export class CartPageComponent implements OnInit, OnDestroy {
   }
 
   proceedToCheckout(): void {
-    // Implement checkout logic here
-    this.toastService.showToast('info', 'Chức năng thanh toán đang được phát triển!');
+    // Chuyển hướng sang trang checkout và truyền dữ liệu giỏ hàng qua router state
+    this.router.navigate(['/checkout'], {
+      state: { cart: this.cartItems }
+    });
   }
 }

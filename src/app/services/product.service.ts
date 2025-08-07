@@ -36,10 +36,7 @@ export class ProductService {
       product.set('id', id);
       // Đảm bảo status là active
       product.set('status', 'active');
-      console.log('[ProductService] createProduct FormData keys:');
-      for (const pair of (product as FormData).entries()) {
-        console.log('  ', pair[0], ':', pair[1]);
-      }
+      // ...existing code...
     } else {
       // Nếu là object, bổ sung các trường thiếu
       if (!product.slug && product.name) {
@@ -49,15 +46,15 @@ export class ProductService {
         product.id = 'SP' + Math.floor(Math.random() * 1000000);
       }
       product.status = 'active';
-      console.log('[ProductService] createProduct data:', product);
+      // ...existing code...
     }
     if (token) {
       let headers = new HttpHeaders();
       headers = headers.set('Authorization', `Bearer ${token}`);
-      console.log('[ProductService] Sending createProduct with headers:', headers);
+      // ...existing code...
       return this.http.post<any>('http://localhost:8080/api/products', product, { headers });
     } else {
-      console.log('[ProductService] Sending createProduct without Authorization header');
+      // ...existing code...
       return this.http.post<any>('http://localhost:8080/api/products', product);
     }
   }

@@ -351,11 +351,11 @@ export class AdminUsersComponent implements OnInit {
       
       if (this.showAddUserModal) {
         // Add new user
-        console.log('Adding new user:', userData);
+        // ...existing code...
         this.toastService.showToast('success', 'Thêm user thành công!');
       } else {
         // Update existing user
-        console.log('Updating user:', userData);
+        // ...existing code...
         this.toastService.showToast('success', 'Cập nhật user thành công!');
       }
       

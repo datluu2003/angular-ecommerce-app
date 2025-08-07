@@ -405,7 +405,7 @@ export class ProfileComponent implements OnInit {
   }
 
   private updateFormWithUserData(user: User): void {
-    console.log('Updating form with user data:', user); // Debug log
+    // ...existing code...
     this.profileForm.patchValue({
       username: user.Username || user.username || '',
       email: user.email || '',

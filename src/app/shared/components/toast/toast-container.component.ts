@@ -114,7 +114,6 @@ export class ToastContainerComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.subscription = this.toastService.toasts$.subscribe((toasts: ToastData[]) => {
-      console.log('Toast subscription triggered:', toasts.length);
       this.toasts = [...toasts]; // Force new array reference
       this.cdr.markForCheck(); // Mark for check instead of detectChanges
       setTimeout(() => this.cdr.detectChanges(), 0); // Async detect changes
@@ -136,7 +135,6 @@ export class ToastContainerComponent implements OnInit, OnDestroy {
   }
 
   removeToast(id: string): void {
-    console.log('Manual remove toast:', id);
     this.toastService.removeToast(id);
     this.cdr.markForCheck();
     setTimeout(() => this.cdr.detectChanges(), 0);

@@ -145,7 +145,7 @@ export class CartService {
           this.cartItems = JSON.parse(savedCart);
           this.cartItemsSubject.next([...this.cartItems]);
         } catch (error) {
-          console.error('Error loading cart from storage:', error);
+          // ...existing code...
           this.cartItems = [];
         }
       }

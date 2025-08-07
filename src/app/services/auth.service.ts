@@ -40,7 +40,7 @@ export class AuthService {
         }
       }),
       catchError(error => {
-        console.error('Login error:', error);
+        // ...existing code...
         throw error;
       })
     );
@@ -55,7 +55,7 @@ export class AuthService {
         }
       }),
       catchError(error => {
-        console.error('Register error:', error);
+        // ...existing code...
         throw error;
       })
     );
@@ -83,22 +83,17 @@ export class AuthService {
       const isValid = decoded.exp > currentTime;
       
       // Debug log
-      console.log('Token check:', {
-        currentTime,
-        expTime: decoded.exp,
-        isValid,
-        timeLeft: decoded.exp - currentTime
-      });
+      // ...existing code...
       
       if (!isValid) {
-        console.log('Token expired, logging out...');
+        // ...existing code...
         this.logout();
         return false;
       }
       
       return true;
     } catch (error) {
-      console.error('Token decode error:', error);
+      // ...existing code...
       this.logout();
       return false;
     }
@@ -110,9 +105,9 @@ export class AuthService {
     
     // Debug log
     if (token) {
-      console.log('Token found:', token.substring(0, 20) + '...');
+      // ...existing code...
     } else {
-      console.log('No token found in localStorage');
+      // ...existing code...
     }
     
     return token;
@@ -146,7 +141,7 @@ export class AuthService {
           }
         }),
         catchError(error => {
-          console.error('Update profile error:', error);
+          // ...existing code...
           if (error.status === 401) {
             this.logout();
           }
@@ -176,7 +171,7 @@ export class AuthService {
           }
         }),
         catchError(error => {
-          console.error('Upload avatar error:', error);
+          // ...existing code...
           if (error.status === 401) {
             this.logout();
           }
@@ -203,7 +198,7 @@ export class AuthService {
           }
         }),
         catchError(error => {
-          console.error('Refresh user data error:', error);
+          // ...existing code...
           if (error.status === 401) {
             this.logout();
           }
@@ -229,7 +224,7 @@ export class AuthService {
       );
       return JSON.parse(jsonPayload);
     } catch (error) {
-      console.error('Token decode error:', error);
+      // ...existing code...
       throw new Error('Invalid token');
     }
   }
@@ -238,19 +233,17 @@ export class AuthService {
   isTokenValid(): boolean {
     const token = this.getToken();
     if (!token) {
-      console.log('[isTokenValid] Không có token');
+      // ...existing code...
       return false;
     }
     try {
       const decoded = this.decodeToken(token);
       const currentTime = Math.floor(Date.now() / 1000);
       const isValid = decoded.exp > currentTime;
-      console.log('[isTokenValid] Token:', token.substring(0, 20) + '...');
-      console.log('[isTokenValid] Decoded:', decoded);
-      console.log('[isTokenValid] currentTime:', currentTime, 'exp:', decoded.exp, 'isValid:', isValid, 'timeLeft:', decoded.exp - currentTime);
+      // ...existing code...
       return isValid;
     } catch (err) {
-      console.log('[isTokenValid] Decode lỗi:', err);
+      // ...existing code...
       return false;
     }
   }
@@ -263,7 +256,7 @@ export class AuthService {
     this.currentUserSubject.next(user);
     this.isLoggedInSubject.next(true);
     
-    console.log('Auth data set:', { user: user.email, role: user.role });
+    // ...existing code...
   }
 
   private checkAuthStatus(): void {
@@ -272,7 +265,7 @@ export class AuthService {
     const token = this.getToken();
     const userStr = localStorage.getItem('user');
     
-    console.log('Checking auth status:', { hasToken: !!token, hasUser: !!userStr });
+    // ...existing code...
     
     if (token && userStr) {
       try {
@@ -281,17 +274,17 @@ export class AuthService {
           const user = JSON.parse(userStr);
           this.currentUserSubject.next(user);
           this.isLoggedInSubject.next(true);
-          console.log('User restored from storage:', user.email);
+          // ...existing code...
         } else {
-          console.log('Token expired during auth check');
+          // ...existing code...
           this.logout();
         }
       } catch (error) {
-        console.error('Error restoring user session:', error);
+        // ...existing code...
         this.logout();
       }
     } else {
-      console.log('No valid session found');
+      // ...existing code...
       this.currentUserSubject.next(null);
       this.isLoggedInSubject.next(false);
     }
