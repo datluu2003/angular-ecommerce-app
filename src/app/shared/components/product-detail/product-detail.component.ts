@@ -9,8 +9,7 @@ import { ToastService } from '../../../services/toast.service';
 import { ProductInfoComponent } from './product-info.component';
 import { ProductQuantityComponent } from './product-quantity.component';
 import { ProductActionsComponent } from './product-actions.component';
-// Import conditionally - nếu RelatedProductsComponent không standalone thì comment dòng này
-// import { RelatedProductsComponent } from './related-products.component';
+
 import { Product } from '../../../models/product.model'; // Đúng path theo cấu trúc dự án
 
 interface LoadingState {
@@ -143,6 +142,24 @@ interface LoadingState {
   `
 })
 export class ProductDetailComponent implements OnInit, OnDestroy {
+  // Xử lý khi ảnh sản phẩm load thành công
+  onImageLoad(): void {
+    this.loadingState.imageTransition = false;
+    this.cdr.detectChanges();
+  }
+
+  // Xử lý khi ảnh sản phẩm load lỗi
+  onImageError(): void {
+    this.loadingState.imageTransition = false;
+    this.cdr.detectChanges();
+  }
+
+  // Xử lý khi ảnh sản phẩm liên quan load lỗi
+  handleImageError(event: Event): void {
+    if (event && event.target && (event.target as HTMLImageElement).src !== undefined) {
+      (event.target as HTMLImageElement).src = '/default.png';
+    }
+  }
   product: Product | null = null;
   quantity = 1;
   relatedProducts: Product[] = [];
@@ -299,30 +316,13 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
   // Optimized navigation cho related products
   onRelatedProductClick(relatedProduct: Product): void {
     if (!relatedProduct || !relatedProduct.slug) return;
-    
     // Prevent default nếu đang loading
-    if (this.loadingState.product) return;
-    
-    // Navigate với smooth transition
-    this.router.navigate(['/product', relatedProduct.slug], {
-      replaceUrl: false // Giữ history để có thể back
-    });
-  }
-
-  // Image loading handlers
-  onImageLoad(): void {
-    this.loadingState.imageTransition = false;
-    this.cdr.detectChanges();
-  }
-
-  onImageError(): void {
-    this.loadingState.imageTransition = false;
-    console.warn('Product image failed to load');
-    this.cdr.detectChanges();
-  }
-
-  handleImageError(event: any): void {
-    event.target.src = '/default.png';
+    if (this.loadingState.product) {
+      this.toastService.showToast('warning', 'Cảnh báo', 'Vui lòng đợi tải xong sản phẩm');
+      return;
+    }
+    // Chuyển sang trang chi tiết sản phẩm liên quan
+    this.router.navigate(['/product', relatedProduct.slug]);
   }
 
   formatPrice(price: number): string {
@@ -394,7 +394,12 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       this.toastService.showToast('warning', 'Cảnh báo', 'Vui lòng đợi tải xong sản phẩm');
       return;
     }
-    // TODO: Implement buy now logic
-    console.log('Buy now clicked for:', this.product);
+    // Truyền toàn bộ giỏ hàng sang trang checkout
+    const cartItems = this.cartService.getCartItems();
+    this.router.navigate(['/checkout'], {
+      state: {
+        cart: cartItems
+      }
+    });
   }
 }

@@ -107,10 +107,20 @@ export class CheckoutComponent implements OnInit {
   checkoutForm!: FormGroup;
   cartItems: any[] = [];
   showOrderSuccess = false;
+  totalCartItems: number = 0;
 
   constructor(private fb: FormBuilder, private router: Router, private cartService: CartService) {
     const nav = this.router.getCurrentNavigation();
-    this.cartItems = nav?.extras.state?.['cart'] || [];
+    const state = nav?.extras.state;
+    // Nếu có cart từ router state (mua ngay), lấy toàn bộ giỏ hàng
+    if (state?.['cart']) {
+      this.cartItems = state['cart'];
+      this.totalCartItems = this.cartItems.reduce((total, item) => total + item.quantity, 0);
+    } else {
+      // Nếu không, lấy từ giỏ hàng như cũ
+      this.cartItems = this.cartService.getCartItems();
+      this.totalCartItems = this.cartService.getTotalItems();
+    }
   }
 
   ngOnInit(): void {
