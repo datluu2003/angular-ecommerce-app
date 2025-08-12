@@ -20,7 +20,6 @@ export const routes: Routes = [
   {
     path: 'cart',
     loadComponent: () => import('../shared/components/cart/cart-page.component').then(m => m.CartPageComponent),
-    canActivate: [AuthGuard]
   },
   {
     path: 'login',

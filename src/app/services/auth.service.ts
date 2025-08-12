@@ -82,7 +82,6 @@ export class AuthService {
       const currentTime = Math.floor(Date.now() / 1000);
       const isValid = decoded.exp > currentTime;
       
-      // Debug log
       // ...existing code...
       
       if (!isValid) {
@@ -103,7 +102,6 @@ export class AuthService {
     if (!this.isBrowser()) return null;
     const token = localStorage.getItem('token');
     
-    // Debug log
     if (token) {
       // ...existing code...
     } else {

@@ -155,7 +155,6 @@ removeToast(id: string): void {
     this.toastsSubject.next([]);
   }
   
-  // Thêm method để debug
   getActiveTimeouts(): number {
     return this.timeoutRefs.size;
   }

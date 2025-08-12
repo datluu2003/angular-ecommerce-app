@@ -5,6 +5,9 @@ import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
+  getProductById(productId: string): Observable<any> {
+    return this.http.get<any>(`http://localhost:8080/api/products/${productId}`);
+  }
   constructor(private http: HttpClient) {}
 
   getProducts(): Observable<any> {
@@ -20,7 +23,12 @@ export class ProductService {
   }
   
   deleteProduct(productId: string): Observable<any> {
-    return this.http.delete<any>(`http://localhost:8080/api/products/${productId}`);
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.delete<any>(`http://localhost:8080/api/products/${productId}`, { headers });
   }
   
   createProduct(product: any): Observable<any> {
@@ -60,7 +68,18 @@ export class ProductService {
   }
   
   updateProduct(productId: string, product: any): Observable<any> {
-    return this.http.put<any>(`http://localhost:8080/api/products/${productId}`, product);
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    // Nếu product là FormData, không set Content-Type (Angular sẽ tự động)
+    if (product instanceof FormData) {
+      return this.http.put<any>(`http://localhost:8080/api/products/${productId}`, product, { headers });
+    } else {
+      headers = headers.set('Content-Type', 'application/json');
+      return this.http.put<any>(`http://localhost:8080/api/products/${productId}`, product, { headers });
+    }
   }
 
   getCategories(): Observable<any> {

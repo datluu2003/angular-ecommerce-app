@@ -51,7 +51,6 @@ export class ProductListComponent implements OnInit {
   ngOnInit() {
     this.productService.getProducts().subscribe({
       next: (data: any) => {
-        console.log('API products response:', data);
         this.products = data.data || [];
         this.hotProducts = this.getRandomProducts(this.products, 8);
         this.loading = false;
